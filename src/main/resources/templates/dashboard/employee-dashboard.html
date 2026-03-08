@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Employé - SmartHR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/dashboard/employee}">
+                <i class="bi bi-building"></i> SmartHR
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    <i class="bi bi-person-circle"></i>
+                    <span th:text="${username}"></span>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        <!-- Message succès -->
+        <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${param.success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Message erreur -->
+        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> Une erreur s'est produite.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Profil -->
+        <div class="profile-card">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center position-relative">
+                    <img th:src="${employee != null && employee.photo != null} ? ${employee.photo} : '/assets/images/default-avatar.png'"
+                         alt="Photo" class="avatar">
+                    <button type="button"
+                            class="btn btn-sm btn-light position-absolute bottom-0 start-50 translate-middle-x"
+                            data-bs-toggle="modal" data-bs-target="#modalPhotoUpload"
+                            style="margin-bottom: -10px;">
+                        <i class="bi bi-camera"></i>
+                    </button>
+                </div>
+                <div class="col-md-8">
+                    <h2 class="mb-2">
+                        <i class="bi bi-person-badge"></i>
+                        <span th:text="${employee != null} ? ${employee.nomComplet} : ${username}"></span>
+                    </h2>
+                    <p class="mb-1">
+                        <i class="bi bi-credit-card"></i>
+                        <strong>Matricule :</strong>
+                        <span th:text="${employee != null} ? ${employee.matricule} : 'N/A'"></span>
+                    </p>
+                    <p class="mb-1">
+                        <i class="bi bi-envelope"></i>
+                        <strong>Email :</strong>
+                        <span th:text="${email}"></span>
+                    </p>
+                    <p class="mb-1" th:if="${employee != null && employee.departementNom != null}">
+                        <i class="bi bi-building"></i>
+                        <strong>Département :</strong>
+                        <span th:text="${employee.departementNom}"></span>
+                    </p>
+                    <p class="mb-0" th:if="${employee != null && employee.posteNom != null}">
+                        <i class="bi bi-briefcase"></i>
+                        <strong>Poste :</strong>
+                        <span th:text="${employee.posteNom}"></span>
+                    </p>
+                </div>
+                <div class="col-md-2 text-end">
+                    <span th:if="${!profilComplet}" class="badge bg-warning text-dark mb-2">
+                        ⚠️ Incomplet
+                    </span>
+                    <span th:if="${profilComplet}" class="badge bg-success mb-2">
+                        ✅ Complet
+                    </span>
+                    <br>
+                    <button type="button" class="btn btn-light btn-sm"
+                            data-bs-toggle="modal" data-bs-target="#modalProfilEdit">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pointage + Congés -->
+        <div class="row mb-4">
+
+            <!-- Pointage -->
+            <div class="col-md-6 mb-3">
+                <div class="attendance-card h-100">
+                    <h4 class="mb-3">
+                        <i class="bi bi-clock-history"></i> Pointage aujourd'hui
+                    </h4>
+
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small>Arrivée</small>
+                            <div class="time-display"
+                                 th:text="${todayAttendance != null && todayAttendance.heureArrivee != null}
+                                         ? ${#temporals.format(todayAttendance.heureArrivee, 'HH:mm')}
+                                         : '--:--'">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small>Départ</small>
+                            <div class="time-display"
+                                 th:text="${todayAttendance != null && todayAttendance.heureDepart != null}
+                                         ? ${#temporals.format(todayAttendance.heureDepart, 'HH:mm')}
+                                         : '--:--'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <small>Temps de travail</small>
+                        <div class="time-display"
+                             th:text="${todayAttendance != null && todayAttendance.heureDepart != null}
+                                     ? ${todayAttendance.heuresTravailleesFormatted}
+                                     : '--:--'">
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+
+                        <!-- Pas encore pointé -->
+                        <form th:if="${todayAttendance == null || todayAttendance.heureArrivee == null}"
+                              method="post" th:action="@{/attendance/checkin}">
+                            <button type="submit" class="btn btn-light btn-action">
+                                <i class="bi bi-play-circle"></i> Pointer arrivée
+                            </button>
+                        </form>
+
+                        <!-- Pointé mais pas encore parti -->
+                        <div th:if="${todayAttendance != null
+                                    && todayAttendance.heureArrivee != null
+                                    && todayAttendance.heureDepart == null}">
+                            <form method="post" th:action="@{/attendance/pause}" class="d-inline">
+                                <button type="submit" class="btn btn-warning btn-sm me-2">
+                                    <i class="bi bi-pause-circle"></i> Pause
+                                </button>
+                            </form>
+                            <form method="post" th:action="@{/attendance/checkout}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-stop-circle"></i> Départ
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Journée terminée -->
+                        <div th:if="${todayAttendance != null && todayAttendance.heureDepart != null}"
+                             class="alert alert-light mb-0">
+                            ✅ Journée terminée !
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Congés -->
+            <div class="col-md-6 mb-3">
+                <div class="leave-card h-100">
+                    <h4 class="mb-3">
+                        <i class="bi bi-calendar-heart"></i> Mes congés
+                    </h4>
+
+                    <div class="text-center mb-3">
+                        <small>Solde de congés</small>
+                        <div class="time-display">26 / 26</div>
+                        <small>jours (Standard Maroc)</small>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-light btn-action"
+                                data-bs-toggle="modal" data-bs-target="#modalLeaveRequest">
+                            <i class="bi bi-plus-circle"></i> Demander un congé
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats du mois -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Jours travaillés</h6>
+                        <h2 th:text="${joursTravailles} + ' / 26'"></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Congés restants</h6>
+                        <h2>26 / 26</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Absences</h6>
+                        <h2 th:text="${joursAbsents}"></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="text-muted">Retards</h6>
+                        <h2 th:text="${joursRetard}"></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL Changer Photo -->
+    <div class="modal fade" id="modalPhotoUpload" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <form method="post" th:action="@{/profile/upload-photo}" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-camera"></i> Changer ma photo
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Choisir une nouvelle photo</label>
+                            <input type="file" class="form-control" name="photo"
+                                   accept="image/jpeg,image/png,image/gif,image/webp" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-info-circle"></i>
+                                Formats : JPG, PNG, GIF, WEBP — Max 5MB
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Uploader
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL Demander Congé -->
+    <div class="modal fade" id="modalLeaveRequest" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" th:action="@{/leave/request}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-calendar-plus"></i> Demander un congé
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Type de congé</label>
+                            <select class="form-select" name="typeCongeId" required>
+                                <option value="">-- Sélectionner --</option>
+                                <option th:each="type : ${leaveTypes}"
+                                        th:value="${type.id}"
+                                        th:text="${type.nom}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Date début</label>
+                                <input type="date" class="form-control" name="dateDebut" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Date fin</label>
+                                <input type="date" class="form-control" name="dateFin" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Motif (optionnel)</label>
+                            <textarea class="form-control" name="motif" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Envoyer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL Modifier Profil -->
+    <div class="modal fade" id="modalProfilEdit" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="post" th:action="@{/profile/edit}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-pencil"></i> Modifier mon profil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="employeeId" th:value="${employee?.id}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" name="prenom"
+                                       th:value="${employee?.prenom}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="nom"
+                                       th:value="${employee?.nom}" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" name="telephone"
+                                   th:value="${employee?.telephone}">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Département</label>
+                                <select class="form-select" name="departementId" required>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:value="${dept.id}"
+                                            th:text="${dept.nom}"
+                                            th:selected="${employee?.departementId == dept.id}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Poste</label>
+                                <select class="form-select" name="posteId" required>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option th:each="poste : ${positions}"
+                                            th:value="${poste.id}"
+                                            th:text="${poste.nom}"
+                                            th:selected="${employee?.posteId == poste.id}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date d'embauche</label>
+                                <input type="date" class="form-control" name="dateEmbauche"
+                                       th:value="${employee?.dateEmbauche}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Type de contrat</label>
+                                <select class="form-select" name="typeContrat">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option th:each="contrat : ${ {'CDI','CDD','Stage','Freelance','Interim'} }"
+                                            th:value="${contrat}"
+                                            th:text="${contrat}"
+                                            th:selected="${employee?.typeContrat == contrat}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

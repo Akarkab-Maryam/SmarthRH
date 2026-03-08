@@ -70,4 +70,32 @@ public class Employee {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // ========== CHAMPS TRANSIENT (JOIN) ==========
+
+@Transient
+private String departementNom;
+
+@Transient
+private String posteNom;
+
+// ========== MÉTHODES UTILITAIRES ==========
+
+/**
+ * Retourne le nom complet de l'employé
+ */
+public String getNomComplet() {
+    return (prenom != null ? prenom : "") + " " + (nom != null ? nom : "");
+}
+
+/**
+ * Vérifie si le profil est complet
+ */
+public boolean isProfilComplet() {
+    return telephone != null &&
+           departementId != null &&
+           posteId != null &&
+           dateEmbauche != null &&
+           typeContrat != null;
+}
 }
