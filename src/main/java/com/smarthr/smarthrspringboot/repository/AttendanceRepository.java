@@ -27,6 +27,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     // Trouver tous les pointages d'un employé entre deux dates
     List<Attendance> findByEmployeIdAndDateBetween(Long employeId, LocalDate startDate, LocalDate endDate);
 
+
     // Compter les pointages par statut pour un employé dans un mois
     @Query("SELECT a.statut, COUNT(a) FROM Attendance a " +
            "WHERE a.employeId = :employeId " +
@@ -36,4 +37,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Object[]> countByStatutForMonth(@Param("employeId") Long employeId,
                                           @Param("month") int month,
                                           @Param("year") int year);
+
+
+                                          
 }

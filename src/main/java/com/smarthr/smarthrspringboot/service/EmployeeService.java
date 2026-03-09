@@ -47,7 +47,8 @@ public class EmployeeService {
 
     /**
      * Générer un matricule unique
-     * Format : EMP-YYYY-XXX 
+     * * Format : EMP-YYYY-NNN
+
      */
     
     public String generateMatricule() {
