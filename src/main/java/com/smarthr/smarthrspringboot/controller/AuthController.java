@@ -25,6 +25,16 @@ public class AuthController {
     
     @Autowired
     private EmailService emailService;
+
+
+ // ============================================
+    // HOME → REDIRECTION
+    // ============================================
+    
+    @GetMapping("/")                          // ← AJOUTE CES 3 LIGNES
+    public String home() {
+        return "redirect:/login";
+    }
     
     // ============================================
     // LOGIN
