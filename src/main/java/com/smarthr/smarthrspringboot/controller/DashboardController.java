@@ -3,6 +3,7 @@ package com.smarthr.smarthrspringboot.controller;
 import com.smarthr.smarthrspringboot.model.Attendance;
 import com.smarthr.smarthrspringboot.model.Department;
 import com.smarthr.smarthrspringboot.model.Employee;
+import com.smarthr.smarthrspringboot.model.Leave;
 import com.smarthr.smarthrspringboot.model.LeaveType;
 import com.smarthr.smarthrspringboot.model.Position;
 import com.smarthr.smarthrspringboot.repository.AttendanceRepository;
@@ -10,6 +11,7 @@ import com.smarthr.smarthrspringboot.repository.DepartmentRepository;
 import com.smarthr.smarthrspringboot.repository.LeaveTypeRepository;
 import com.smarthr.smarthrspringboot.repository.PositionRepository;
 import com.smarthr.smarthrspringboot.service.EmployeeService;
+import com.smarthr.smarthrspringboot.service.LeaveService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -43,9 +45,8 @@ public class DashboardController {
     @Autowired
     private LeaveTypeRepository leaveTypeRepository;
 
-    // ============================================
-    // DASHBOARD EMPLOYÉ
-    // ============================================
+    @Autowired
+    private LeaveService leaveService;
 
     @GetMapping("/employee")
     public String showEmployeeDashboard(HttpSession session, Model model) {
@@ -109,10 +110,18 @@ public class DashboardController {
         List<Position> positions = positionRepository.findAll();
         List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
 
-        // 8. Vérifier si le profil est complet
+        // 8. Récupérer les congés de l'employé
+        List<Leave> mesConges = null;
+        int soldeConges = 26;
+        if (employee != null) {
+            mesConges = leaveService.getAllLeaves(employee.getId());
+            soldeConges = leaveService.getLeaveBalance(employee.getId());
+        }
+
+        // 9. Vérifier si le profil est complet
         boolean profilComplet = employee != null && employee.isProfilComplet();
 
-        // 9. Passer les données au template Thymeleaf
+        // 10. Passer les données au template Thymeleaf
         model.addAttribute("userId", userId);
         model.addAttribute("username", username);
         model.addAttribute("email", email);
@@ -126,6 +135,8 @@ public class DashboardController {
         model.addAttribute("joursTravailles", joursTravailles);
         model.addAttribute("joursAbsents", joursAbsents);
         model.addAttribute("joursRetard", joursRetard);
+        model.addAttribute("mesConges", mesConges);
+        model.addAttribute("soldeConges", soldeConges);
 
         System.out.println("[INFO] Dashboard chargé pour : " +
                 (employee != null ? employee.getNomComplet() : username));

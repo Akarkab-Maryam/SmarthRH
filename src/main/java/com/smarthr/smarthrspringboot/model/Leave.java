@@ -57,4 +57,8 @@ public class Leave {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // ✅ AJOUTÉ : champ pour affichage uniquement (pas en BDD)
+    @Transient
+    private String typeCongeNom;
 }

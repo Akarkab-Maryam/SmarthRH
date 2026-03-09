@@ -101,6 +101,99 @@
         <!-- Pointage + Congés -->
         <div class="row mb-4">
 
+    <!-- Liste des congés -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background-color: #1a3c5e; color: white;">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check"></i> Mes demandes de congé
+                </h5>
+                <button type="button" class="btn btn-light btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#modalLeaveRequest">
+                    <i class="bi bi-plus-circle"></i> Nouvelle demande
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${mesConges == null || mesConges.isEmpty()}"
+                     class="text-center text-muted p-4">
+                    <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                    <p class="mt-2">Aucune demande de congé</p>
+                </div>
+                <table th:if="${mesConges != null && !mesConges.isEmpty()}"
+                       class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>Date début</th>
+                            <th>Date fin</th>
+                            <th>Nb jours</th>
+                            <th>Motif</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="conge : ${mesConges}">
+                            <td th:text="${conge.typeCongeNom != null} ? ${conge.typeCongeNom} : 'N/A'"></td>
+                            <td th:text="${#temporals.format(conge.dateDebut, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(conge.dateFin, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${conge.nbJours} + ' j'"></td>
+                            <td th:text="${conge.motif != null} ? ${conge.motif} : '-'"></td>
+                            <td>
+                                <span th:if="${conge.statut == 'EN_ATTENTE'}"
+                                      class="badge bg-warning text-dark">En attente</span>
+                                <span th:if="${conge.statut == 'APPROUVE'}"
+                                      class="badge bg-success">Approuvé</span>
+                                <span th:if="${conge.statut == 'REFUSE'}"
+                                      class="badge bg-danger">Refusé</span>
+                                <span th:if="${conge.statut == 'ANNULE'}"
+                                      class="badge bg-secondary">Annulé</span>
+                            </td>
+                            <td>
+                                <form th:if="${conge.statut == 'EN_ATTENTE'}"
+                                      method="post" th:action="@{/leave/cancel}">
+                                    <input type="hidden" name="leaveId" th:value="${conge.id}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Annuler
+                                    </button>
+                                </form>
+                                <span th:if="${conge.statut != 'EN_ATTENTE'}" class="text-muted">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Documents -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background-color: #1a3c5e; color: white;">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> Mes documents
+                </h5>
+                <button type="button" class="btn btn-light btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#modalDocumentRequest">
+                    <i class="bi bi-plus-circle"></i> Demander un document
+                </button>
+            </div>
+            <div class="card-body text-center text-muted p-4">
+                <i class="bi bi-file-earmark-x" style="font-size: 2rem;"></i>
+                <p class="mt-2">Aucun document disponible</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
             <!-- Pointage -->
             <div class="col-md-6 mb-3">
                 <div class="attendance-card h-100">
