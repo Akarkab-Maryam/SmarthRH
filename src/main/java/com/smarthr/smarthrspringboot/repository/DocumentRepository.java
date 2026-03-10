@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     
@@ -19,4 +20,5 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     
     // Trouver tous les documents d'un employÃƒÂ© pour une annÃƒÂ©e
     List<Document> findByEmployeIdAndAnnee(Long employeId, Integer annee);
+    List<Document> findByEmployeIdAndVisibleEmployeOrderByDateUploadDesc(Long employeId, Boolean visibleEmploye);
 }
