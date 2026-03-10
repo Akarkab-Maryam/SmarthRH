@@ -2,6 +2,8 @@ package com.smarthr.smarthrspringboot.service;
 
 import com.smarthr.smarthrspringboot.model.Leave;
 import com.smarthr.smarthrspringboot.repository.LeaveRepository;
+import com.smarthr.smarthrspringboot.repository.LeaveTypeRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +95,20 @@ public class LeaveService {
         return leaveRepository.findByEmployeIdAndStatut(employeId, "EN_ATTENTE");
     }
 
-    public List<Leave> getAllLeaves(Long employeId) {
-        return leaveRepository.findByEmployeIdOrderByDateDebutDesc(employeId);
+    @Autowired
+private LeaveTypeRepository leaveTypeRepository;
+
+public List<Leave> getAllLeaves(Long employeId) {
+    List<Leave> leaves = leaveRepository.findByEmployeIdOrderByDateDebutDesc(employeId);
+    
+    // Remplir typeCongeNom pour chaque congé
+    for (Leave leave : leaves) {
+        if (leave.getTypeCongeId() != null) {
+            leaveTypeRepository.findById(leave.getTypeCongeId())
+                .ifPresent(type -> leave.setTypeCongeNom(type.getNom()));
+        }
     }
+    
+    return leaves;
+}
 }
