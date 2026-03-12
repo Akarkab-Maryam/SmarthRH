@@ -1,70 +1,69 @@
 package com.smarthr.smarthrspringboot.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 public class EmailService {
-    
-    @Autowired
-    private JavaMailSender mailSender;
-    
+
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
+
     @Value("${mail.from}")
     private String fromEmail;
-    
+
     @Value("${mail.from.name}")
     private String fromName;
-    
-    /**
-     * Envoyer un email de réinitialisation de mot de passe
-     */
+
     public boolean sendPasswordResetEmail(String toEmail, String token) {
         try {
-            String resetUrl = "http://localhost:8080/reset-password?token=" + token;
-            
+            String resetUrl = "https://smarthrh.onrender.com/reset-password?token=" + token;
+
             String subject = "Réinitialisation de votre mot de passe - SmartHR";
-            
+
             String body = "Bonjour,\n\n"
                     + "Vous avez demandé la réinitialisation de votre mot de passe.\n\n"
-                    + "Cliquez sur le lien suivant pour réinitialiser votre mot de passe :\n"
+                    + "Cliquez sur le lien suivant :\n"
                     + resetUrl + "\n\n"
                     + "Ce lien est valide pendant 24 heures.\n\n"
-                    + "Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.\n\n"
                     + "Cordialement,\n"
                     + "L'équipe SmartHR";
-            
+
             return sendEmail(toEmail, subject, body);
-            
+
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'envoi de l'email : " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erreur envoi email : " + e.getMessage());
             return false;
         }
     }
-    
-    /**
-     * Méthode générique pour envoyer un email
-     */
+
     public boolean sendEmail(String toEmail, String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromName + " <" + fromEmail + ">");
-            message.setTo(toEmail);
-            message.setSubject(subject);
-            message.setText(body);
-            
-            mailSender.send(message);
-            
-            System.out.println("✅ Email envoyé avec succès à : " + toEmail);
-            return true;
-            
-        } catch (Exception e) {
-            System.err.println("❌ Erreur lors de l'envoi de l'email à " + toEmail);
+            Email from = new Email(fromEmail, fromName);
+            Email to = new Email(toEmail);
+            Content content = new Content("text/plain", body);
+            Mail mail = new Mail(from, subject, to, content);
+
+            SendGrid sg = new SendGrid(sendGridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            System.out.println("✅ Email envoyé, status: " + response.getStatusCode());
+            return response.getStatusCode() == 202;
+
+        } catch (IOException e) {
+            System.err.println("❌ Échec envoi email à : " + toEmail);
             System.err.println("Erreur : " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
