@@ -18,3 +18,18 @@ SmartHR est une application de gestion des ressources humaines moderne conçue p
 * **Gestion de base de données :** Spring Data JPA (Hibernate)
 * **Build Tool :** Maven
 * **Conteneurisation :** Docker
+
+<img width="1273" height="728" alt="image" src="https://github.com/user-attachments/assets/4ef975b1-8dda-49fa-9b53-29ff43a03ccc" />
+
+<img width="1240" height="711" alt="image" src="https://github.com/user-attachments/assets/fbf2270c-fee0-495d-96c9-8f5ae72fc900" />
+
+<img width="1286" height="726" alt="image" src="https://github.com/user-attachments/assets/966cc106-d1b0-4e6b-bb39-5cf338778d66" />
+
+<img width="1260" height="732" alt="image" src="https://github.com/user-attachments/assets/e0fb5618-6536-4b6f-9b6d-99d637cdd234" />
+
+
+
+
+
+
+
