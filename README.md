@@ -29,6 +29,17 @@ SmartHR est une application de gestion des ressources humaines moderne conçue p
 
 
 
+## ⚖️ Propriété Intellectuelle et Licence
+
+Ce logiciel est la propriété exclusive de **Akarkab Maryam**. 
+Tous droits réservés. Toute reproduction, distribution ou utilisation commerciale 
+sans autorisation préalable est strictement interdite. 
+
+Pour toute demande de licence commerciale ou de démonstration personnalisée, 
+veuillez me contacter via mon email sur mon profil.
+
+
+
 
 
 
